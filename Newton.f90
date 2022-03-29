@@ -1,7 +1,7 @@
 Module Newton
-
    Use jacobienne
    Use mod_LU
+   Use fonction
 
    Implicit none
 
@@ -10,17 +10,22 @@ Module Newton
 
 Contains
 
-   Function Newtn(x_0) Result (x)
-      Real(PR), Dimension(:), Intent(In) :: x_0
-      Real(PR), Dimension(Size(x_0)) :: x
+   Subroutine Newtn(theta, a, b, c, d, e)
+      Real(PR), Intent(InOut) :: a, b, c, d, e
+      Real(PR), Dimension(5) :: diff
+      Real(PR) :: theta
 
       ! Résoudre le système linéaire formé par J(x_n)(n_n+1 - x_n) = -F(x_n)
-      x = solv_lu(Jac(x_0), -F(x_0))
-      do while (norme2(x) > eps)
-         x_0 = x_0 + x
-         x = solv_lu(Jacob(x_0), -F(x_0))
-      end do
-   end function Newtn
+      diff = solv_lu(Jacob(theta, a, b, c, d, e), -f(theta, a, b, c, d, e))
+      Do While (norme2(diff) > eps)
+         a = a + diff(1)
+         b = b + diff(2)
+         c = c + diff(3)
+         d = d + diff(4)
+         e = e + diff(5)
+         diff = solv_lu(Jacob(theta, a, b, c, d, e), -f(theta, a, b, c, d, e))
+      End Do
+   End Subroutine Newtn
 
 
    Function norme2(V) Result(R)

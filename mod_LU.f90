@@ -1,6 +1,7 @@
 Module mod_LU
+  Use variables
 
-   Implicit None
+  Implicit None
 
 Contains
 

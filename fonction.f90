@@ -1,11 +1,10 @@
 Module fonction
-  Implicit none
   !Fonction TER
   !On choisit LC tibia comme origine du repère
+  Use variables
+  Implicit none
 
-
-  Integer,parameter :: Pr=8
-  Real(Pr),parameter :: Pi=4._8*atan(1._Pr)
+  
   Type quaternion
      Real(Pr) :: a,b,c,d
 
@@ -69,31 +68,7 @@ Module fonction
 !!$  MCLF%c=Real(-2.90+1.67,Pr)
 !!$  MCLF%d=Real(-38.05-30.09,Pr)
 
-  
 
-  !remplissage vecteur ligament (en mm)
-
-  !ACL
-  l(1)=33.05
-  !PCL
-  l(2)=41.46
-  !MCL
-  l(3)=100.79
-  !LC
-  l(4)=78.77
-  !MC
-  l(5)=31.11
-
-  test%b=3
-  test%c=4
-  test%d=5
-  u=(/1,0,0/)
-  v=(/0,1,0/)
-  w=(/0,0,1/)
-  test=rota(Pi/4._8,test,u)
-  test=rota(Pi/2._8,test,v)
-  test=rota(Pi/6._8,test,w)
-  Print*,test
   Contains
 
     function distance(x)Result(d)
@@ -157,7 +132,6 @@ Module fonction
 
     !déclaration variable
     Real(Pr) :: som
-    integer :: i
 
 
     !instructions
@@ -226,7 +200,9 @@ Module fonction
 
   
 
-  function f(theta,x,y,z,phi,psi)result(V)
+  function f(theta,x,y,z,phi,psi) result(V)
+    Real(PR), Dimension(5), Parameter :: l=(/ 33.05, 41.46, 100.79, 78.77, 31.11 /)!vecteur ligament (en mm) !ACL !PCL !MCL !LC !MC
+
     !Réalise la rotation d'un vecteur et renvoie le vecteur après rotation
     !déclaration variable
     Real(Pr),intent(in) :: x,y,z,phi,psi,theta
@@ -239,66 +215,66 @@ Module fonction
 
 
     !Translation des 5 points
-    
+
     LCF%a=0._Pr
-  LCF%b=Real(0,Pr)+x
-  LCF%c=Real(0,Pr)+y
-  LCF%d=Real(0,Pr)+z
+    LCF%b=Real(0,Pr)+x
+    LCF%c=Real(0,Pr)+y
+    LCF%d=Real(0,Pr)+z
 
-  MCF%a=0._Pr
-  MCF%b=Real(-6.45-1.75,Pr)+x
-  MCF%c=Real(-4.24+1.67,Pr)+y
-  MCF%d=Real(-22.93-30.09,Pr)+z
+    MCF%a=0._Pr
+    MCF%b=Real(-6.45-1.75,Pr)+x
+    MCF%c=Real(-4.24+1.67,Pr)+y
+    MCF%d=Real(-22.93-30.09,Pr)+z
 
-  ACLF%a=0._Pr
-  ACLF%b=Real(-8.60-1.75,Pr)+x
-  ACLF%c=Real(-1.43+1.67,Pr)+y
-  ACLF%d=Real(7.28-30.09,Pr)+z
+    ACLF%a=0._Pr
+    ACLF%b=Real(-8.60-1.75,Pr)+x
+    ACLF%c=Real(-1.43+1.67,Pr)+y
+    ACLF%d=Real(7.28-30.09,Pr)+z
 
-  PCLF%a=0._Pr
-  PCLF%b=Real(-3.66-1.75,Pr)+x
-  PCLF%c=Real(-7.93+1.67,Pr)+y
-  PCLF%d=Real(-5.94-30.09,Pr)+z
+    PCLF%a=0._Pr
+    PCLF%b=Real(-3.66-1.75,Pr)+x
+    PCLF%c=Real(-7.93+1.67,Pr)+y
+    PCLF%d=Real(-5.94-30.09,Pr)+z
 
-  MCLF%a=0._Pr
-  MCLF%b=Real(-7.25-1.75,Pr)+x
-  MCLF%c=Real(-2.90+1.67,Pr)+y
-  MCLF%d=Real(-38.05-30.09,Pr)+z
-
-
-  !rotation des 5 points
-
-  
-  LCF= rota(theta,LCF,thetarot)
-  LCF= rota(theta,LCF,psirot)
-  LCF= rota(theta,LCF,phirot)
-
-  MCF= rota(theta,MCF,thetarot)
-  MCF= rota(theta,MCF,psirot)
-  MCF=rota(theta,MCF,phirot)
-
-  ACLF=rota(theta,ACLF,thetarot)
-  ACLF=rota(theta,ACLF,psirot)
-  ACLF=rota(theta,ACLF,phirot)
-
-  PCLF= rota(theta,PCLF,thetarot)
-  PCLF=rota(theta,PCLF,psirot)
-  PCLF=rota(theta,PCLF,phirot)
-
-  MCLF= rota(theta,MCLF,thetarot)
-  MCLF=rota(theta,MCLF,psirot)
-  MCLF =rota(theta,MCLF,phirot)
+    MCLF%a=0._Pr
+    MCLF%b=Real(-7.25-1.75,Pr)+x
+    MCLF%c=Real(-2.90+1.67,Pr)+y
+    MCLF%d=Real(-38.05-30.09,Pr)+z
 
 
-  !calcul des distances entre fémur et tibia - longueur du ligament associé
-  
-  V(1)=distance(sous(ACLF,ACLT))-l(1)
-  V(2)=distance(sous(PCLF,PCLT))-l(2)
-  V(3)=distance(sous(MCLF,MCLT))-l(3)
-  V(4)=distance(sous(LCF,LCT))-l(4)
-  V(5)=distance(sous(MCF,MCT))-l(5)
-  
-end function f
+    !rotation des 5 points
+
+
+    LCF= rota(theta,LCF,thetarot)
+    LCF= rota(psi,LCF,psirot)
+    LCF= rota(phi,LCF,phirot)
+
+    MCF= rota(theta,MCF,thetarot)
+    MCF= rota(psi,MCF,psirot)
+    MCF= rota(phi,MCF,phirot)
+
+    ACLF= rota(theta,ACLF,thetarot)
+    ACLF= rota(psi,ACLF,psirot)
+    ACLF= rota(phi,ACLF,phirot)
+
+    PCLF= rota(theta,PCLF,thetarot)
+    PCLF= rota(psi,PCLF,psirot)
+    PCLF= rota(phi,PCLF,phirot)
+
+    MCLF= rota(theta,MCLF,thetarot)
+    MCLF= rota(psi,MCLF,psirot)
+    MCLF= rota(phi,MCLF,phirot)
+
+
+    !calcul des distances entre fémur et tibia - longueur du ligament associé
+
+    V(1)=distance(sous(ACLF,ACLT))-l(1)
+    V(2)=distance(sous(PCLF,PCLT))-l(2)
+    V(3)=distance(sous(MCLF,MCLT))-l(3)
+    V(4)=distance(sous(LCF,LCT))-l(4)
+    V(5)=distance(sous(MCF,MCT))-l(5)
+
+  end function f
 
 function sous(a,b)result(y)
   !soustraction quaternion

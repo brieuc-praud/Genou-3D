@@ -7,67 +7,67 @@ Module jacobienne
   Real(PR), Parameter :: delthax=0.0001
   
 Contains
-  Function jacob(a,b,c,d,e) Result(jac)
+  Function jacob(theta, a,b,c,d,e) Result(jac)
     !la jacobienne de f aux point (a,b,c,d,e)
 
-    real(PR),intent(in) :: a,b,c,d,e
+    real(PR),intent(in) :: theta, a,b,c,d,e
     real(PR),dimension(5,5) :: jac
 
 
-    jac(1,:) = dvpa(a,b,c,d,e)
-    jac(2,:) = dvpb(a,b,c,d,e)
-    jac(3,:) = dvpc(a,b,c,d,e)
-    jac(4,:) = dvpd(a,b,c,d,e)
-    jac(5,:) = dvpe(a,b,c,d,e)
+    jac(1,:) = dvpa(theta, a,b,c,d,e)
+    jac(2,:) = dvpb(theta, a,b,c,d,e)
+    jac(3,:) = dvpc(theta, a,b,c,d,e)
+    jac(4,:) = dvpd(theta, a,b,c,d,e)
+    jac(5,:) = dvpe(theta, a,b,c,d,e)
 
   end function jacob
 
-  function dvpa(a,b,c,d,e)
+  function dvpa(theta, a,b,c,d,e)
     !dérivée partielle de la fonction f par rapport à la 1 ere variable
 
-    real(PR), Intent(In) :: a,b,c,d,e
+    real(PR), Intent(In) :: theta, a,b,c,d,e
     real(PR),dimension(5) :: dvpa
     
-    dvpa=(f(a+delthax,b,c,d,e)-f(a,b,c,d,e))/delthax
+    dvpa=(f(theta, a+delthax,b,c,d,e)-f(theta, a,b,c,d,e))/delthax
 
   end function  dvpa
 
-  function  dvpb(a,b,c,d,e)
+  function  dvpb(theta, a,b,c,d,e)
     !dérivée partielle de la fonction f par rapport à la 2 ere variable
 
-    real(PR), Intent(In) :: a,b,c,d,e
+    real(PR), Intent(In) :: theta, a,b,c,d,e
     real(PR),dimension(5) :: dvpb
 
-    dvpb=(f(a,b+delthax,c,d,e)-f(a,b,c,d,e))/delthax
+    dvpb=(f(theta, a,b+delthax,c,d,e)-f(theta, a,b,c,d,e))/delthax
 
   end function  dvpb
 
-  function  dvpc(a,b,c,d,e)
+  function  dvpc(theta, a,b,c,d,e)
     !dérivée partielle de la fonction f par rapport à la 3 ere variable
 
-    real(PR), Intent(In) :: a,b,c,d,e
+    real(PR), Intent(In) :: theta, a,b,c,d,e
     real(PR),dimension(5) :: dvpc
-    dvpc=(f(a,b,c+delthax,d,e)-f(a,b,c,d,e))/delthax
+    dvpc=(f(theta, a,b,c+delthax,d,e)-f(theta, a,b,c,d,e))/delthax
 
   end function dvpc
 
-  function dvpd(a,b,c,d,e)
+  function dvpd(theta, a,b,c,d,e)
     !dérivée partielle de la fonction f par rapport à la 4 ere variable
 
-    real(PR), Intent(In) :: a,b,c,d,e
+    real(PR), Intent(In) :: theta, a,b,c,d,e
     real(PR),dimension(5) :: dvpd
 
-    dvpd=(f(a,b,c,d+delthax,e)-f(a,b,c,d,e))/delthax
+    dvpd=(f(theta, a,b,c,d+delthax,e)-f(theta, a,b,c,d,e))/delthax
 
   end function  dvpd
 
-  function dvpe(a,b,c,d,e)
+  function dvpe(theta, a,b,c,d,e)
     !dérivée partielle de la fonction f par rapport à la 5 ere variable
 
-    real(PR), Intent(In) :: a,b,c,d,e
+    real(PR), Intent(In) :: theta, a,b,c,d,e
     real(PR),dimension(5) :: dvpe
 
-    dvpe=(f(a,b,c,d,e+delthax)-f(a,b,c,d,e))/delthax
+    dvpe=(f(theta, a,b,c,d,e+delthax)-f(theta, a,b,c,d,e))/delthax
 
   end function dvpe
 
