@@ -10,7 +10,7 @@ $(EXE)	: $(OBJ)
 	$(F90) $(OPT) -c $<
 
 clean	:
-	rm *.o *.mod $(EXE)
+	rm *.o *.mod *.dat $(EXE)
 
 exe	: $(EXE)
 	./$(EXE)

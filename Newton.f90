@@ -5,39 +5,34 @@ Module Newton
 
    Implicit none
 
-   Real(PR) :: eps = 0.001
+   Real(PR) :: eps = 1.e-6
 
 
 Contains
 
-   Subroutine Newtn(theta, a, b, c, d, e)
-      Real(PR), Intent(InOut) :: a, b, c, d, e
-      Real(PR), Dimension(5) :: diff
-      Real(PR) :: theta
+   Subroutine Newtn(U)
+      Real(PR), Dimension(6), Intent(InOut) :: U !U = (x,y,z,phi,psi,theta)
+      Real(PR), Dimension(5) :: diff !différence x_n+1 - x_n
 
-      ! Résoudre le système linéaire formé par J(x_n)(n_n+1 - x_n) = -F(x_n)
-      diff = solv_lu(Jacob(theta, a, b, c, d, e), -f(theta, a, b, c, d, e))
+      ! Résoudre le système linéaire formé par J(x_n)(x_n+1 - x_n) = -F(x_n)
+      diff = solv_lu(Jacob(U), -f(U))
       Do While (norme2(diff) > eps)
-         a = a + diff(1)
-         b = b + diff(2)
-         c = c + diff(3)
-         d = d + diff(4)
-         e = e + diff(5)
-         diff = solv_lu(Jacob(theta, a, b, c, d, e), -f(theta, a, b, c, d, e))
+         U = U + (/ diff, 0._PR /)
+         diff = solv_lu(Jacob(U), -f(U))
       End Do
    End Subroutine Newtn
 
 
-   Function norme2(V) Result(R)
-      Real(PR), dimension(:), intent(in) :: V
+   Function norme2(U) Result(R)
+      Real(PR), Dimension(:), Intent(In) :: U
       Real(PR) :: R
       Integer :: k
 
-      R = 0
-      Do k = 1, size(V)
-         R = R + V(k)**2
+      R = 0._PR
+      Do k = 1, size(U)
+         R = R + U(k)**2
       End Do
-      R = sqrt(R)
+      R = Sqrt(R)
    End Function norme2
 
 

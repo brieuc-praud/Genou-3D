@@ -7,11 +7,9 @@ Module fonction
   
   Type quaternion
      Real(Pr) :: a,b,c,d
-
+     
   end type quaternion
 
-  Real(Pr),dimension(3) :: u,v,w
-  Real(Pr),dimension(5) :: l
   Type(quaternion) :: LCT,MCT,ACLT,PCLT,MCLT,LCF,MCF,ACLF,PCLF,MCLF,test
 
 !!$
@@ -83,10 +81,6 @@ Module fonction
     d=sqrt(som)
   end function distance
 
-
-
-
-
   
   function prodquat(u,v)Result(r)
     !produit scalaire de 2 quaternons
@@ -101,8 +95,6 @@ Module fonction
 
 
 
-
-  
   function prodvecquat(u,v)Result(w)
  !produit scalaire de 2 quaternions
 
@@ -117,10 +109,6 @@ Module fonction
     w%d=u%b*v%c - (u%c*v%b)
      
   end function prodvecquat
-
-
-
-
 
   
   function invquat(u)Result(v)
@@ -145,10 +133,6 @@ Module fonction
   end function invquat
 
 
-
-
-
-
   function prodhamilton(u,v)Result(w)
     Type(quaternion),intent(in) :: u,v
     Type(quaternion) :: w
@@ -163,11 +147,6 @@ Module fonction
     w%d= u%a*v%d + v%a*u%d + q%d
     
   end function prodhamilton
-    
-    
-
-
-
 
   
   function rota(theta,v,u)Result(vp)
@@ -196,18 +175,17 @@ Module fonction
   end function  rota
 
 
-
-
-  
-
-  function f(theta,x,y,z,phi,psi) result(V)
-    Real(PR), Dimension(5), Parameter :: l=(/ 33.05, 41.46, 100.79, 78.77, 31.11 /)!vecteur ligament (en mm) !ACL !PCL !MCL !LC !MC
-
+  Function f(U) Result(V)
     !Réalise la rotation d'un vecteur et renvoie le vecteur après rotation
-    !déclaration variable
-    Real(Pr),intent(in) :: x,y,z,phi,psi,theta
+
+    Real(PR), Dimension(5), Parameter :: l=(/ 33.05, 41.46, 100.79, 78.77, 31.11 /)!vecteur ligaments (en mm) !ACL !PCL !MCL !LC !MC
+    Real(PR), Dimension(6), Intent(In) :: U !Contient, dans l'ordre, x,y,z,phi,psi,theta
+
     Real(Pr),dimension(5) :: V
     Real(Pr),dimension(3) :: thetarot,phirot,psirot
+    Real(PR) :: x,y,z,phi,psi,theta
+
+    x = U(1) ; y = U(2) ; z = U(3) ; phi = U(4) ; psi = U(5) ; theta = U(6)
 
     thetarot=((/1,0,0/))
     psirot=((/0,1,0/))
@@ -274,7 +252,7 @@ Module fonction
     V(4)=distance(sous(LCF,LCT))-l(4)
     V(5)=distance(sous(MCF,MCT))-l(5)
 
-  end function f
+  End Function f
 
 function sous(a,b)result(y)
   !soustraction quaternion
