@@ -5,61 +5,88 @@ Module mod_LU
 
 Contains
 
-   Subroutine decomp_lu(A, L, U)
-      Real(PR), dimension(:,:), intent(in) :: A
-      Real(PR), dimension(:,:), intent(out) :: L, U
-      Real(PR), dimension(:,:), allocatable :: M
-      Integer :: i, j, k, n
+  Subroutine LU(A, M, perm) !Effectue la décomposition LU de la matrice A dans la matrice M
+    Real(PR), Dimension(:,:), Intent(In) :: A
+    Real(PR), Dimension(Size(A,1),Size(A,1)), Intent(InOut) :: M
+    Integer, Dimension(Size(A,1)), Intent(InOut) :: perm
+    
+    Real(PR), Dimension(Size(A,1)) :: ligne !Pour un éventuel échange de lignes
+    Real(PR) :: min , x
+    Integer :: i,j,k, n, i_pivot, p
 
-      n = size(A(1,:))
-      Allocate(M(n,n))
-      M = A
+    M = A
+    n = Size(A,1)
+    Do j=1, n-1
+       !Trouver le pivot
+       min = Abs( Abs(M(j,j)) - Abs(1./M(j,j)) )!Minimum au sens de la multiplication
+       i_pivot = j
+       Do i=j+1, n
+          x = Abs( Abs(M(i,j)) - Abs(1./M(i,j)) )
+          If (x < min) Then
+             min = x
+             i_pivot = i
+          End If
+       End Do
+       !Echanger les lignes
+       If (i_pivot /= j) Then
+          ligne = M(i_pivot,:) ; M(i_pivot,:) = M(j,:) ; M(j,:) = ligne !Echange des lignes dans la matrice
+          p = perm(i_pivot) ; perm(i_pivot) = perm(j) ; perm(j) = p !Echange des indices dans le tableau des permutations
+       End If
+       
+       !Diviser la colonne par le pivot
+       Do i=j+1, n
+          M(i,j) = M(i,j)/M(j,j)
+       End Do
+       
+       !Soustraire la sous-matrice
+       Do i=j+1, n
+          Do k=j+1, n
+             M(i,k) = M(i,k) - M(i,j)*M(j,k)
+          End Do
+       End Do
+    End Do
+    
+  End Subroutine LU
 
-      Do k = 1, n-1
-         M(k+1:n,k) = M(k+1:n,k) / M(k,k)
-         Do j = k+1, n
-            Do i = k+1, n
-               M(i,j) = M(i,j) - M(i,k)*M(k,j)
-            End Do
-         End Do
-      End Do
+  Function reslu(A, B) Result(X)
+    Real(PR), dimension(:,:), intent(in) :: A
+    Real(PR), dimension(:), intent(in) :: B
+    Real(PR), dimension(size(B)) :: X, Y, Z
+    Integer :: i, k, n
+    Real(PR) :: som
+    Real(PR), dimension(Size(B),Size(B)) :: M
+    Integer, Dimension(Size(B)) :: perm
 
-      Do k = 1, n
-         L(k,1:k) = M(k,1:k)
-         L(k,k:n) = 0
-         L(k,k) = 1
-         U(k,1:k) = 0
-         U(k,k:n) = M(k,k:n)
-      End Do
-   End Subroutine decomp_lu
+    n = size(B)
+    
+    Do i=1, n
+       perm(i) = i
+    End Do
+    
+    Call LU(A, M, perm)
+    
+    Do i=1, n
+       z(i) = b(perm(i))
+    End Do
 
-   Function solv_lu(A, B) Result(X)
-      Real(PR), dimension(:,:), intent(in) :: A
-      Real(PR), dimension(:), intent(in) :: B
-      Real(PR), dimension(size(B)) :: X, Y
-      Integer :: i, k, n
-      Real(PR) :: som
-      Real(PR), dimension(:,:), allocatable :: L, U
-
-      n = size(B)
-      Allocate(L(n,n), U(n,n))
-      Call decomp_lu(A, L, U)
-
-      Do i = 1, n
-         som = 0._PR
-         Do k = 1, i-1
-            som = som + L(i,k)*Y(k)
-         End Do
-         Y(i) = (B(i)-som) / L(i,i)
-      End Do
-
-      Do i = n, 1, -1
-         som = 0._PR
-         Do k = i+1, n
-            som = som + U(i,k)*X(k)
-         End Do
-         X(i) = (Y(i)-som) / U(i,i)
-      End Do
-   End Function solv_lu
+    ! Résolution de Ly=b
+    y(1) = z(1) ! Cas i=1 traité à part
+    Do i=2,n
+       som = 0._PR
+       Do k=1, i-1
+          som = som + M(i,k)*y(k)
+       End Do
+       y(i) = z(i) - som
+    End Do
+    ! Résolution de Uz=y
+    Do i=0,n-1
+       som = 0._PR
+       Do k=n, n-i+1, -1
+          som = som + M(n-i,k)*x(k)
+       End Do
+       x(n-i) = ( y(n-i) - som )/M(n-i,n-i)
+    End Do
+    
+  End Function reslu
 
 End Module mod_LU

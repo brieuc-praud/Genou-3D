@@ -5,7 +5,7 @@ Module Newton
 
    Implicit none
 
-   Real(PR) :: eps = 1.e-6
+   Real(PR) :: eps = 1.e-10
 
 
 Contains
@@ -15,10 +15,11 @@ Contains
       Real(PR), Dimension(5) :: diff !différence x_n+1 - x_n
 
       ! Résoudre le système linéaire formé par J(x_n)(x_n+1 - x_n) = -F(x_n)
-      diff = solv_lu(Jacob(U), -f(U))
+      diff = reslu(Jacob(U), -f(U))
       Do While (norme2(diff) > eps)
          U = U + (/ diff, 0._PR /)
-         diff = solv_lu(Jacob(U), -f(U))
+         diff = reslu(Jacob(U), -f(U))
+         Print *, "diff=", diff
       End Do
    End Subroutine Newtn
 

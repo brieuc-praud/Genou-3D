@@ -10,7 +10,7 @@ Module fonction
      
   end type quaternion
 
-  Type(quaternion) :: LCT,MCT,ACLT,PCLT,MCLT,LCF,MCF,ACLF,PCLF,MCLF,test
+  Type(quaternion) :: LCT,MCT,ACLT,PCLT,MCLT,   LCF,MCF,ACLF,PCLF,MCLF
 
 !!$
 !!$  !Initialisation des points du tibia
@@ -76,7 +76,7 @@ Module fonction
    Type(quaternion),Intent(in) :: x
     Real(Pr) :: d,som
     !instructions
-    som=0
+    som=0._PR
     som= som + x%b**2 +x%c**2 +x%d**2
     d=sqrt(som)
   end function distance
@@ -90,7 +90,7 @@ Module fonction
     Real(Pr) :: r
 
     !instructions
-    r=(u%b*v%b) + (u%c*v%c) + (u%d*v%d) 
+    r = (u%b*v%b) + (u%c*v%c) + (u%d*v%d) 
   end function prodquat
 
 
@@ -104,9 +104,9 @@ Module fonction
 
     !instructions
 
-    w%b=u%c*v%d - (u%d*v%c)
-    w%c=u%d*v%b - (u%b*v%d)
-    w%d=u%b*v%c - (u%c*v%b)
+    w%b = u%c*v%d - (u%d*v%c)
+    w%c = u%d*v%b - (u%b*v%d)
+    w%d = u%b*v%c - (u%c*v%b)
      
   end function prodvecquat
 
@@ -191,8 +191,33 @@ Module fonction
     psirot=((/0,1,0/))
     phirot= ((/0,0,1/))
 
+    !Initialisation des points du tibia
+    LCT%a=0._Pr
+    LCT%b=0._Pr
+    LCT%c=0._Pr
+    LCT%d=0._Pr
 
-    !Translation des 5 points
+    MCT%a=0._Pr
+    MCT%b=Real(-15.95-10.58,Pr)
+    MCT%c=Real(53.53+51.69,Pr)
+    MCT%d=Real(-20.37-19.26,Pr)
+
+    ACLT%a=0._Pr
+    ACLT%b=Real(14.03-10.58,Pr)
+    ACLT%c=Real(-1.21+51.69,Pr)
+    ACLT%d=Real(-3.72-19.26,Pr)
+
+    PCLT%a=0._Pr
+    PCLT%b=Real(-17.24-10.58,Pr)
+    PCLT%c=Real(-12.15+51.69,Pr)
+    PCLT%d=Real(15.60-19.26,Pr)
+
+    MCLT%a=0._Pr
+    MCLT%b=Real(4.55-10.58,Pr)
+    MCLT%c=Real(-72.62+51.69,Pr)
+    MCLT%d=Real(-16.23-19.26,Pr)
+
+    !Translation des 5 points du fémur
 
     LCF%a=0._Pr
     LCF%b=Real(0,Pr)+x
