@@ -1,5 +1,5 @@
 Module mod_LU
-  Use variables
+  Use mod_variables
 
   Implicit None
 
