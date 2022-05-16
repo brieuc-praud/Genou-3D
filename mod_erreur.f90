@@ -1,226 +1,293 @@
 Module mod_erreur
-  !Fonction TER
-  !On choisit LC tibia comme origine du repère
-  Use mod_variables
-  Implicit none
+   Use mod_variables
+   Implicit none
 
+   Type quaternion
+      Real(PR) :: a,b,c,d
+   End type quaternion
 
-  Type quaternion
-     Real(Pr) :: a,b,c,d
-
-  end type quaternion
-
-  Interface operator(-)
-     Module Procedure soustraction_quat
-  End Interface operator(-)
+   Interface operator(-)
+      Module Procedure soustraction_quat
+   End Interface operator(-)
 
 Contains
-  Function soustraction_quat(p,q) Result(y)
-    !soustraction quaternion
+   Function print_quat(q) Result(str)
+      ! Donne les coefficients du quaternion passé en paramètres dans str
+      Type(quaternion) :: q
+      Character(200) :: str
 
-    Type(quaternion), Intent(In) :: p,q
-    Type(quaternion) :: y
+      Write(str, *) q%b, q%c, q%d
 
-    y%a = p%a-q%a
-    y%b = p%b-q%b
-    y%c = p%c-q%c
-    y%d = p%d-q%d
-  End Function soustraction_quat
+   End Function print_quat
 
-  Function norme2_quat(x) Result(d)
-    !calcul la distance d'un vecteur (on prend a=0 dans le quaternion)
-    Type(quaternion),Intent(In) :: x
-    Real(PR) :: d
+   Function soustraction_quat(p,q) Result(y)
+      !soustraction de quaternions
+      Type(quaternion), Intent(In) :: p,q
+      Type(quaternion) :: y
 
-    d = Sqrt(x%b**2 +x%c**2 +x%d**2)
-    
-  End Function norme2_quat
+      y%a = p%a-q%a
+      y%b = p%b-q%b
+      y%c = p%c-q%c
+      y%d = p%d-q%d
+   End Function soustraction_quat
 
-  function prod_scal_quat(u,v) Result(r)
-    !produit scalaire de 2 quaternons
+   Function norme2_quat(x) Result(d)
+      !calcul la distance du quaternion à l'origine
+      Type(quaternion),Intent(In) :: x
+      Real(PR) :: d
 
-    !déclaration variable entrée/sortie
-    Type(quaternion), Intent(In) :: u,v
-    Real(PR) :: r
+      d = Sqrt(x%b**2 +x%c**2 +x%d**2)
 
-    !instructions
-    r = u%b*v%b  +  u%c*v%c  +  u%d*v%d
-  end function prod_scal_quat
+   End Function norme2_quat
 
-  function prod_vec_quat(u,v)Result(w)
-    !produit scalaire de 2 quaternions
+   function prod_scal_quat(u,v) Result(r)
+      !produit scalaire de 2 quaternions
 
-    !déclaration variable entrée/sortie
-    Type(quaternion), Intent(In) :: u,v
-    Type(quaternion) :: w
+      Type(quaternion), Intent(In) :: u,v
+      Real(PR) :: r
 
-    !instructions
+      r = u%b*v%b  +  u%c*v%c  +  u%d*v%d
+   end function prod_scal_quat
 
-    w%b = u%c*v%d - (u%d*v%c)
-    w%c = u%d*v%b - (u%b*v%d)
-    w%d = u%b*v%c - (u%c*v%b)
+   function prod_vec_quat(u,v) Result(w)
+      !produit vectoriel de 2 quaternions
 
-  end function prod_vec_quat
+      Type(quaternion), Intent(In) :: u,v
+      Type(quaternion) :: w
 
-  function inv_quat(u)Result(v)
-    !inverse quaternion
+      w%b = u%c * v%d   -   u%d * v%c
+      w%c = u%d * v%b   -   u%b * v%d
+      w%d = u%b * v%c   -   u%c * v%b
 
-    !déclaration variable entrée/sortie
-    Type(quaternion), Intent(In) :: u
-    Type(quaternion) :: v
+   end function prod_vec_quat
 
-    !déclaration variable
-    Real(PR) :: som
+   function inv_quat(u)Result(v)
+      !inverse de quaternion
 
+      Type(quaternion), Intent(In) :: u
+      Type(quaternion) :: v
 
-    !instructions
-    som = u%a**2    +    u%b**2 + u%c**2 + u%d**2
-    v%a =  u%a/som
-    v%b = -u%b/som
-    v%c = -u%c/som
-    v%d = -u%d/som
-  end function inv_quat
+      Real(PR) :: som
 
-  function prod_hamilton_quat(u,v)Result(w)
-    Type(quaternion),intent(in) :: u,v
-    Type(quaternion) :: w
-    Type(quaternion) :: q
+      som = u%a**2    +    u%b**2 + u%c**2 + u%d**2
+      v%a =  u%a/som
+      v%b = -u%b/som
+      v%c = -u%c/som
+      v%d = -u%d/som
+   end function inv_quat
 
-
-    !instruction
-    q=prod_vec_quat(u,v)
-    w%a= u%a*v%a -prod_scal_quat(u,v)
-    w%b= u%a*v%b + v%a*u%b + q%b
-    w%c= u%a*v%c + v%a*u%c + q%c
-    w%d= u%a*v%d + v%a*u%d + q%d
-    
-  end function prod_hamilton_quat
+   function prod_hamilton_quat(u,v)Result(w)
+      !Produit hamiltonien sur les quaternions
+      Type(quaternion),intent(in) :: u,v
+      Type(quaternion) :: w
+      Type(quaternion) :: q
 
 
-  Function rotation_quat(theta, v, u) Result(vp)
-    !calcul de la rotation d'un vecteur autour d'un axe u d'angle theta
+      q = prod_vec_quat(u,v)
+      w%a = u%a*v%a - prod_scal_quat(u,v)
+      w%b = u%a*v%b + v%a*u%b + q%b
+      w%c = u%a*v%c + v%a*u%c + q%c
+      w%d = u%a*v%d + v%a*u%d + q%d
 
-    Real(PR), Intent(In) :: theta
-    Type(quaternion), Intent(In) :: v
-    Type(quaternion) :: vp
-    Real(PR), Dimension(3), Intent(In) :: u
-
-    Type(quaternion) :: q,qinv
-
-    q%a=cos(theta/2)
-    q%b=sin(theta/2)*u(1)
-    q%c=sin(theta/2)*u(2)
-    q%d=sin(theta/2)*u(3)
-
-    !calcul de qvq⁻¹
-    qinv = inv_quat(q)
-    vp = prod_hamilton_quat(q,v)
-    vp = prod_hamilton_quat(vp,qinv)
-  End Function rotation_quat
+   end function prod_hamilton_quat
 
 
-  Function erreur(u, theta)
-    ! Réalise le déplacement des points du fémur (translation + rotation) et renvoie la différence de la distance au point correspondant sur le tibia et à la distance attendue entre ces deux mêmes points
-    Real(PR), Dimension(3), Parameter :: thetarot=(/1._PR, 0._PR, 0._PR/),&
-         & phirot=(/0._PR, 1._PR, 0._PR/),psirot=(/0._PR, 0._PR, 1._PR/)
-    Real(PR), Dimension(5), Parameter :: l=(/ 33.05_PR, 41.46_PR, 100.79_PR, 78.77_PR, 31.11_PR /)!vecteur ligaments (en mm) !ACL !PCL !MCL !LC !MC (distance attendue)
-    
-    Real(PR), Dimension(5), Intent(In) :: u !Contient, dans l'ordre, x,y,z,phi,psi,theta
-    Real(PR), Intent(In) :: theta
-    Real(PR) :: erreur
-    
-    Real(PR) :: x,y,z,phi,psi
-    Type(quaternion) :: LCT,MCT,ACLT,PCLT,MCLT,   LCF,MCF,ACLF,PCLF,MCLF
+   Function rotation_quat(theta, v, u) Result(vp)
+      !Applique la rotation d'angle theta et d'axe u au quaternion v
 
-    x = U(1) ; y = U(2) ; z = U(3) ; phi = U(4) ; psi = U(5)
-    
-    !Initialisation des points du tibia
-    LCT%a = 0._PR
-    LCT%b = 0._PR
-    LCT%c = 0._PR
-    LCT%d = 0._PR
+      Real(PR), Intent(In) :: theta
+      Type(quaternion), Intent(In) :: v
+      Type(quaternion) :: vp
+      Real(PR), Dimension(3), Intent(In) :: u
 
-    MCT%a = 0._PR
-    MCT%b = Real(-15.95-10.58,Pr)
-    MCT%c = Real(53.53+51.69,Pr)
-    MCT%d = Real(-20.37-19.26,Pr)
+      Type(quaternion) :: q,qinv
 
-    ACLT%a = 0._PR
-    ACLT%b = Real(14.03-10.58,Pr)
-    ACLT%c = Real(-1.21+51.69,Pr)
-    ACLT%d = Real(-3.72-19.26,Pr)
+      q%a=cos(theta*0.5_PR)
+      q%b=sin(theta*0.5_PR)*u(1)
+      q%c=sin(theta*0.5_PR)*u(2)
+      q%d=sin(theta*0.5_PR)*u(3)
 
-    PCLT%a = 0._PR
-    PCLT%b = Real(-17.24-10.58,Pr)
-    PCLT%c = Real(-12.15+51.69,Pr)
-    PCLT%d = Real(15.60-19.26,Pr)
-
-    MCLT%a = 0._PR
-    MCLT%b = Real(4.55-10.58,Pr)
-    MCLT%c = Real(-72.62+51.69,Pr)
-    MCLT%d = Real(-16.23-19.26,Pr)
-
-    !Initialisation des 5 points du fémur pour theta=55°
-    !et translation
-
-    LCF%a = 0._PR
-    LCF%b = 0._PR + x
-    LCF%c = 0._PR + y
-    LCF%d = 0._PR + z
-
-    MCF%a=0._PR
-    MCF%b=Real(-6.45-1.75,Pr) + x
-    MCF%c=Real(-4.24+1.67,Pr) + y
-    MCF%d=Real(-22.93-30.09,Pr) + z
-
-    ACLF%a=0._PR
-    ACLF%b=Real(-8.60-1.75,Pr) + x
-    ACLF%c=Real(-1.43+1.67,Pr) + y
-    ACLF%d=Real(7.28-30.09,Pr) + z
-
-    PCLF%a=0._PR
-    PCLF%b=Real(-3.66-1.75,Pr) + x
-    PCLF%c=Real(-7.93+1.67,Pr) + y
-    PCLF%d=Real(-5.94-30.09,Pr) + z
-
-    MCLF%a=0._PR
-    MCLF%b=Real(-7.25-1.75,Pr) + x
-    MCLF%c=Real(-2.90+1.67,Pr) + y
-    MCLF%d=Real(-38.05-30.09,Pr)  +z
+      !calcul de qvq⁻¹
+      qinv = inv_quat(q)
+      vp = prod_hamilton_quat(q,v)
+      vp = prod_hamilton_quat(vp,qinv)
+   End Function rotation_quat
 
 
-    !rotation des 5 pointsdu fémur 
+   Function erreur(U, theta)
+      ! Réalise le déplacement des points du fémur (translation + rotation)
+      ! et renvoie la différence de la distance au point correspondant sur le tibia et de la distance attendue entre ces deux mêmes points
+      Real(PR), Dimension(5), Parameter :: l = (/ 78.77_PR, 31.11_PR, 33.05_PR, 41.46_PR, 100.79_PR /) ! vecteur ligaments (en mm) LC MC ACL PCL MCL (distance attendue)
+
+      Real(PR), Dimension(5), Intent(In) :: U !Contient, dans l'ordre, x,y,z,phi,psi
+      Real(PR), Intent(In) :: theta
+      Real(PR) :: erreur
+
+      Real(PR) :: x,y,z,phi,psi
+      Type(Quaternion), Dimension(10) :: Points
+
+      Integer :: i
+      Type(quaternion) :: diff
 
 
-    LCF = rotation_quat(theta,LCF,thetarot)
-    LCF = rotation_quat(psi,LCF,psirot)
-    LCF = rotation_quat(phi,LCF,phirot)
-
-    MCF = rotation_quat(theta,MCF,thetarot)
-    MCF = rotation_quat(psi,MCF,psirot)
-    MCF = rotation_quat(phi,MCF,phirot)
-
-    ACLF = rotation_quat(theta,ACLF,thetarot)
-    ACLF = rotation_quat(psi,ACLF,psirot)
-    ACLF = rotation_quat(phi,ACLF,phirot)
-
-    PCLF = rotation_quat(theta,PCLF,thetarot)
-    PCLF = rotation_quat(psi,PCLF,psirot)
-    PCLF = rotation_quat(phi,PCLF,phirot)
-
-    MCLF = rotation_quat(theta,MCLF,thetarot)
-    MCLF = rotation_quat(psi,MCLF,psirot)
-    MCLF = rotation_quat(phi,MCLF,phirot)
+      x = U(1) ; y = U(2) ; z = U(3) ; phi = U(4) ; psi = U(5)
 
 
-    ! Calcul des distances entre un point du fémur et le point du tibia qui lui est associé puis soustrait la longueur du ligament associé
+      Points = calculer_positions(U, theta)
 
-    erreur = norme2_quat(ACLF - ACLT) - l(1)
-    erreur = erreur + norme2_quat(PCLF - PCLT) - l(2)
-    erreur = erreur + norme2_quat(MCLF - MCLT) - l(3)
-    erreur = erreur + norme2_quat(LCF - LCT) - l(4)
-    erreur = erreur + norme2_quat(MCF - MCT) - l(5)
+      ! Calcul des distances entre un point du fémur et le point du tibia qui lui est associé puis soustrait la longueur du ligament associé
+      Do i=1, 5
+         diff = Points(i+5) - Points(i) ! quaternion fémur - tibia
+         erreur = erreur + (  norme2_quat(diff)  -  l(i)  )**2 ! Au carré pour la dérivabilité de la fonction (important pour BFGS)
+      End Do
 
-  End Function erreur
-  
+      ! = Pénalités =
+      !En z : le fémur doit rester au-dessus du tibia
+      If (z < 0._PR) Then
+         erreur = erreur + z**2 ! Au carré pour la dérivabilité de la fonction (important pour BFGS)
+      End If
+      ! En phi : on veut l'angle modulo 2 pi
+      If (Abs(phi) > pi) Then
+         erreur = erreur + (Abs(phi)-pi)**2 ! Au carré pour la dérivabilité de la fonction (important pour BFGS)
+      End If
+      ! En psi : on veut l'angle modulo 2 pi
+      If (Abs(psi) > pi) Then
+         erreur = erreur + (Abs(psi)-pi)**2 ! Au carré pour la dérivabilité de la fonction (important pour BFGS)
+      End If
+
+   End Function erreur
+
+   Function calculer_positions(u, theta) Result(Points)
+
+      Real(PR), Dimension(5), Intent(In) :: U !Contient, dans l'ordre, x,y,z,phi,psi
+      Real(PR), Intent(In) :: theta
+      Type(Quaternion), Dimension(10) :: Points
+
+      Type(quaternion) :: LCT,MCT,ACLT,PCLT,MCLT,   LCF,MCF,ACLF,PCLF,MCLF
+
+      Real(PR) :: x,y,z,phi,psi
+
+      x = U(1) ; y = U(2) ; z = U(3) ; phi = U(4) ; psi = U(5)
+
+      ! Initialisation des points du tibia
+      ! NON OPTIMISE, CES QUATERNIONS (TIBIA) DEVRAIENT ETRE DEFINIS EN TEMPS QUE PARAMETRES
+      ! On choisit LC tibia comme origine du repère
+
+      LCT%a = 0._PR
+      LCT%b = 0._PR
+      LCT%c = 0._PR
+      LCT%d = 0._PR
+
+      MCT%a = 0._PR
+      MCT%b = -26.53_PR
+      MCT%c = 105.22_PR
+      MCT%d = -39.63_PR
+
+      ACLT%a = 0._PR
+      ACLT%b = 3.45_PR
+      ACLT%c = 50.48_PR
+      ACLT%d = -22.98_PR
+
+      PCLT%a = 0._PR
+      PCLT%b = -27.82_PR
+      PCLT%c = 39.54
+      PCLT%d = -3.66_PR
+
+      MCLT%a = 0._PR
+      MCLT%b = -6.03_PR
+      MCLT%c = -20.93_PR
+      MCLT%d = -35.49_PR
+
+      !initialisation des points du fémur
+
+      LCF%a = 0._PR
+      LCF%b = 0._PR
+      LCF%c = 0._PR
+      LCF%d = 0._PR
+
+      MCF%a = 0._PR
+      MCF%b = -8.2_PR
+      MCF%c = -2.57_PR
+      MCF%d = -53.02
+
+      ACLF%a = 0._PR
+      ACLF%b = -10.35_PR
+      ACLF%c = 0.24_PR
+      ACLF%d = -22.81_PR
+
+      PCLF%a = 0._PR
+      PCLF%b = -5.41_PR
+      PCLF%c = -6.26_PR
+      PCLF%d = -36.03
+
+      MCLF%a = 0._PR
+      MCLF%b = -9._PR
+      MCLF%c = -1.23_PR
+      MCLF%d = -68.14_PR
+
+      ! Translation du fémur relativement au tibia
+      Call translater( LCF, MCF, ACLF, PCLF, MCLF , x, y, z )
+      ! Rotation des 5 points du fémur
+      Call tourner(LCF, MCF, ACLF, PCLF, MCLF, theta, phi, psi)
+
+      ! Les 5 points du fémur en sortie de fonction
+      Points = (/ LCT, MCT, ACLT, PCLT, MCLT, LCF, MCF, ACLF, PCLF, MCLF /)
+
+   End Function calculer_positions
+
+   Subroutine translater(q1, q2, q3, q4, q5, x, y, z)
+      Real(PR), Intent(In) :: x,y,z
+      Type(quaternion), Intent(InOut) :: q1, q2, q3, q4, q5
+
+      q1%b = q1%b + x
+      q1%c = q1%c + y
+      q1%d = q1%d + z
+
+      q2%b = q2%b + x
+      q2%c = q2%c + y
+      q2%d = q2%d + z
+
+      q3%b = q3%b + x
+      q3%c = q3%c + y
+      q3%d = q3%d + z
+
+      q4%b = q4%b + x
+      q4%c = q4%c + y
+      q4%d = q4%d + z
+
+      q5%b = q5%b + x
+      q5%c = q5%c + y
+      q5%d = q5%d + z
+
+   End Subroutine translater
+
+   Subroutine tourner(q1, q2, q3, q4, q5, theta, phi, psi)
+      Real(PR), Dimension(3), Parameter :: thetarot=(/1._PR, 0._PR, 0._PR/),&
+      & phirot=(/0._PR, 1._PR, 0._PR/),psirot=(/0._PR, 0._PR, 1._PR/)
+
+      Real(PR), Intent(In) :: theta, phi, psi
+      Type(quaternion), Intent(InOut) :: q1, q2, q3, q4, q5
+
+      q1 = rotation_quat(theta, q1, thetarot)
+      q1 = rotation_quat(phi, q1, phirot)
+      q1 = rotation_quat(psi, q1, psirot)
+
+      q2 = rotation_quat(theta, q2, thetarot)
+      q2 = rotation_quat(phi, q2, phirot)
+      q2 = rotation_quat(psi, q2, psirot)
+
+      q3 = rotation_quat(theta, q3, thetarot)
+      q3 = rotation_quat(phi, q3, phirot)
+      q3 = rotation_quat(psi, q3, psirot)
+
+      q4 = rotation_quat(theta, q4, thetarot)
+      q4 = rotation_quat(phi, q4, phirot)
+      q4 = rotation_quat(psi, q4, psirot)
+
+      q5 = rotation_quat(theta, q5, thetarot)
+      q5 = rotation_quat(phi, q5, phirot)
+      q5 = rotation_quat(psi, q5, psirot)
+
+   End Subroutine tourner
+
 End Module mod_erreur
